@@ -1,11 +1,16 @@
 package org.springaicommunity.mcp.provider.tool;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.util.Assert;
 import org.springaicommunity.mcp.annotation.McpTool;
+import org.springaicommunity.mcp.annotation.McpTool.MetaEntry;
 
 public abstract class AbstractMcpToolProvider {
 
@@ -38,4 +43,11 @@ public abstract class AbstractMcpToolProvider {
 		return this.jsonMapper;
 	}
 
+	protected Map<String, Object> getToolMeta(McpTool tool) {
+		if (tool == null || tool.meta() == null || tool.meta().length == 0) {
+			return Collections.emptyMap();
+		}
+
+        return Arrays.stream(tool.meta()).collect(Collectors.toMap(MetaEntry::key, MetaEntry::value));
+	}
 }

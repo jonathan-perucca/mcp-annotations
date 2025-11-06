@@ -26,6 +26,7 @@ import java.util.function.BiFunction;
 
 import org.junit.jupiter.api.Test;
 import org.springaicommunity.mcp.annotation.McpTool;
+import org.springaicommunity.mcp.annotation.McpTool.MetaEntry;
 import org.springaicommunity.mcp.method.tool.utils.JsonParser;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.common.McpTransportContext;
@@ -957,4 +958,28 @@ public class SyncStatelessMcpToolProviderTests {
 		assertThat(((TextContent) result.content().get(0)).text()).isEqualTo("Only context tool executed");
 	}
 
+	@Test
+	void testGetToolSpecificationsWithMetaTool() {
+		class WithMetaTool {
+
+			@McpTool(name = "test-tool", meta = { @MetaEntry(key = "test-key", value = "test-value") })
+			public String testWithMetaTool(String input) {
+				return "Processed: " + input;
+			}
+
+		}
+
+		WithMetaTool toolObject = new WithMetaTool();
+		SyncStatelessMcpToolProvider provider = new SyncStatelessMcpToolProvider(List.of(toolObject));
+
+		List<SyncToolSpecification> toolSpecs = provider.getToolSpecifications();
+
+		assertThat(toolSpecs).isNotNull();
+		assertThat(toolSpecs).hasSize(1);
+
+		SyncToolSpecification toolSpec = toolSpecs.get(0);
+		assertThat(toolSpec.tool().name()).isEqualTo("test-tool");
+		assertThat(toolSpec.tool().inputSchema()).isNotNull();
+		assertThat(toolSpec.tool().meta().get("test-key")).isEqualTo("test-value");
+	}
 }

@@ -47,6 +47,21 @@ public @interface McpTool {
 	String title() default "";
 
 	/**
+	 * Additional metadata of the tool
+	 */
+	MetaEntry[] meta() default {};
+
+	/**
+	 * Additional metadata describing a Tool to clients
+	 */
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.ANNOTATION_TYPE)
+	public @interface MetaEntry {
+		String key();
+		String value();
+	}
+
+	/**
 	 * Additional properties describing a Tool to clients.
 	 *
 	 * all properties in ToolAnnotations are hints. They are not guaranteed to provide a

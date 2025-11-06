@@ -37,6 +37,7 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 import net.javacrumbs.jsonunit.core.Option;
+import org.springaicommunity.mcp.annotation.McpTool.MetaEntry;
 import reactor.core.publisher.Mono;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -867,4 +868,28 @@ public class SyncMcpToolProviderTests {
 		assertThat(toolSpec.tool().inputSchema()).isNotNull();
 	}
 
+	@Test
+	void testGetToolSpecificationsWithMetaTool() {
+		class WithMetaTool {
+
+			@McpTool(name = "test-tool", meta = { @MetaEntry(key = "test-key", value = "test-value") })
+			public String testWithMetaTool(String input) {
+				return "Processed: " + input;
+			}
+
+		}
+
+		WithMetaTool toolObject = new WithMetaTool();
+		SyncMcpToolProvider provider = new SyncMcpToolProvider(List.of(toolObject));
+
+		List<SyncToolSpecification> toolSpecs = provider.getToolSpecifications();
+
+		assertThat(toolSpecs).isNotNull();
+		assertThat(toolSpecs).hasSize(1);
+
+		SyncToolSpecification toolSpec = toolSpecs.get(0);
+		assertThat(toolSpec.tool().name()).isEqualTo("test-tool");
+		assertThat(toolSpec.tool().inputSchema()).isNotNull();
+		assertThat(toolSpec.tool().meta().get("test-key")).isEqualTo("test-value");
+	}
 }

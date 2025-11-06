@@ -32,6 +32,7 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
+import org.springaicommunity.mcp.annotation.McpTool.MetaEntry;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -1007,4 +1008,29 @@ public class AsyncStatelessMcpToolProviderTests {
 		assertThat(toolSpec.tool().outputSchema()).isNotNull();
 	}
 
+	@Test
+	void testGetToolSpecificationsWithMetaTool() {
+		// Create a class with only one valid async tool method
+		class WithMetaTool {
+
+			@McpTool(name = "test-tool", meta = { @MetaEntry(key = "test-key", value = "test-value") })
+			public Mono<String> testTool(String input) {
+				return Mono.just("Processed: " + input);
+			}
+
+		}
+
+		WithMetaTool toolObject = new WithMetaTool();
+		AsyncStatelessMcpToolProvider provider = new AsyncStatelessMcpToolProvider(List.of(toolObject));
+
+		List<AsyncToolSpecification> toolSpecs = provider.getToolSpecifications();
+
+		assertThat(toolSpecs).isNotNull();
+		assertThat(toolSpecs).hasSize(1);
+
+		AsyncToolSpecification toolSpec = toolSpecs.get(0);
+		assertThat(toolSpec.tool().name()).isEqualTo("test-tool");
+		assertThat(toolSpec.tool().inputSchema()).isNotNull();
+		assertThat(toolSpec.tool().meta().get("test-key")).isEqualTo("test-value");
+	}
 }

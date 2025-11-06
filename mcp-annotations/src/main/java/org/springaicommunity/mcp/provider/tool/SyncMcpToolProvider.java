@@ -103,6 +103,7 @@ public class SyncMcpToolProvider extends AbstractMcpToolProvider {
 						title = toolName;
 					}
 					toolBuilder.title(title);
+					toolBuilder.meta(getToolMeta(toolJavaAnnotation));
 
 					// Generate Output Schema from the method return type.
 					// Output schema is not generated for primitive types, void,
